@@ -503,7 +503,7 @@ void addDryWeatherInflows(DateTime currentDate)
 //
 {
     int      j, p;
-    int      month, day, hour;
+    int      month, day, hour, dayInYear;
     double   q, w;
     TDwfInflow* inflow;
 
@@ -512,6 +512,7 @@ void addDryWeatherInflows(DateTime currentDate)
     month = datetime_monthOfYear(currentDate) - 1;
     day   = datetime_dayOfWeek(currentDate) - 1;
     hour  = datetime_hourOfDay(currentDate);
+    dayInYear = datetime_dayOfYear(currentDate) - 1;
 
     // --- for each node with a defined dry weather inflow
     for (j = 0; j < Nobjects[NODE]; j++)
@@ -525,7 +526,7 @@ void addDryWeatherInflows(DateTime currentDate)
         {
             if ( inflow->param < 0 )
             {
-                q = inflow_getDwfInflow(inflow, month, day, hour);
+                q = inflow_getDwfInflow(inflow, month, day, hour, dayInYear);
                 break;
             }
             inflow = inflow->next;
@@ -557,7 +558,7 @@ void addDryWeatherInflows(DateTime currentDate)
             if ( inflow->param >= 0 )
             {
                 p = inflow->param;
-                w = q * inflow_getDwfInflow(inflow, month, day, hour);
+                w = q * inflow_getDwfInflow(inflow, month, day, hour, dayInYear);
                 Node[j].newQual[p] += w;
                 massbal_addInflowQual(DRY_WEATHER_INFLOW, p, w);
 

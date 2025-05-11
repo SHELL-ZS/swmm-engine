@@ -35,7 +35,7 @@
 //-----------------------------------------------------------------------------
 //  Local Functions
 //-----------------------------------------------------------------------------
-double getPatternFactor(int p, int month, int day, int hour);
+double getPatternFactor(int p, int month, int day, int hour, int dayInYear);
 
 
 int inflow_readExtInflow(char* tok[], int ntoks)
@@ -213,7 +213,7 @@ double inflow_getExtInflow(TExtInflow* inflow, DateTime aDate)
 //           date and time.
 //
 {
-    int    month, day, hour;
+    int    month, day, hour, dayInYear;
     int    p = inflow->basePat;      // baseline pattern
     int    k = inflow->tSeries;      // time series index
     double cf = inflow->cFactor;     // units conversion factor
@@ -226,7 +226,8 @@ double inflow_getExtInflow(TExtInflow* inflow, DateTime aDate)
         month = datetime_monthOfYear(aDate) - 1;
         day   = datetime_dayOfWeek(aDate) - 1;
         hour  = datetime_hourOfDay(aDate);
-        blv  *= getPatternFactor(p, month, day, hour);
+        dayInYear = datetime_dayOfYear(aDate) - 1;
+        blv  *= getPatternFactor(p, month, day, hour, dayInYear);
     }
     if ( k >= 0 ) tsv = table_tseriesLookup(&Tseries[k], aDate, FALSE) * sf;
     return cf * (tsv + blv);
@@ -249,7 +250,7 @@ int inflow_readDwfInflow(char* tok[], int ntoks)
     int    j;                          // node index
     int    k;                          // pollutant index (-1 for flow)
     int    m;                          // time pattern index
-    int    pats[4];                    // time pattern index array
+    int    pats[5];                    // time pattern index array
     double x;                          // avg. DWF value
     TDwfInflow* inflow;                // dry weather flow inflow object
 
@@ -272,7 +273,7 @@ int inflow_readDwfInflow(char* tok[], int ntoks)
     if ( k == -1 ) x /= UCF(FLOW);
 
     // --- get time patterns assigned to the inflow
-    for (i=0; i<4; i++) pats[i] = -1;
+    for (i=0; i<5; i++) pats[i] = -1;
     for (i=3; i<7; i++)
     {
         if ( i >= ntoks ) break;
@@ -302,7 +303,7 @@ int inflow_readDwfInflow(char* tok[], int ntoks)
     // --- assign property values to the inflow object
     inflow->param = k;
     inflow->avgValue = x;
-    for (i=0; i<4; i++) inflow->patterns[i] = pats[i];
+    for (i=0; i<5; i++) inflow->patterns[i] = pats[i];
     return 0;
 }
 
@@ -340,25 +341,25 @@ void   inflow_initDwfInflow(TDwfInflow* inflow)
 //
 {
     int i, p;
-    int tmpPattern[4];  // index of each type of DWF pattern
+    int tmpPattern[5];  // index of each type of DWF pattern
 
     // --- assume no patterns were supplied
-    for (i=0; i<4; i++) tmpPattern[i] = -1;
+    for (i=0; i<5; i++) tmpPattern[i] = -1;
 
     // --- assign supplied patterns to proper position (by type) in tmpPattern
-    for (i=0; i<4; i++)
+    for (i=0; i<5; i++)
     {
         p = inflow->patterns[i];
         if ( p >= 0 ) tmpPattern[Pattern[p].type] = p;
     }
 
     // --- re-fill inflow pattern array by pattern type
-    for (i=0; i<4; i++) inflow->patterns[i] = tmpPattern[i];
+    for (i=0; i<5; i++) inflow->patterns[i] = tmpPattern[i];
 }
 
 //=============================================================================
 
-double inflow_getDwfInflow(TDwfInflow* inflow, int month, int day, int hour)
+double inflow_getDwfInflow(TDwfInflow* inflow, int month, int day, int hour, int dayInYear)
 //
 //  Input:   inflow = dry weather inflow data structure
 //           month = current month of year of simulation
@@ -372,19 +373,21 @@ double inflow_getDwfInflow(TDwfInflow* inflow, int month, int day, int hour)
     double f = 1.0;                    // pattern factor
 
     p1 = inflow->patterns[MONTHLY_PATTERN];
-    if ( p1 >= 0 ) f *= getPatternFactor(p1, month, day, hour);
+    if ( p1 >= 0 ) f *= getPatternFactor(p1, month, day, hour, dayInYear);
     p1 = inflow->patterns[DAILY_PATTERN];
-    if ( p1 >= 0 ) f *= getPatternFactor(p1, month, day, hour);
+    if ( p1 >= 0 ) f *= getPatternFactor(p1, month, day, hour, dayInYear);
+    p1 = inflow->patterns[YEAR_PATTERN];
+    if ( p1 >= 0 ) f *= getPatternFactor(p1, month, day, hour, dayInYear);
     p1 = inflow->patterns[HOURLY_PATTERN];
     p2 = inflow->patterns[WEEKEND_PATTERN];
     if ( p2 >= 0 )
     {
         if ( day == 0 || day == 6 )
-            f *= getPatternFactor(p2, month, day, hour);
+            f *= getPatternFactor(p2, month, day, hour, dayInYear);
         else if ( p1 >= 0 )
-            f *= getPatternFactor(p1, month, day, hour);
+            f *= getPatternFactor(p1, month, day, hour, dayInYear);
     }
-    else if ( p1 >= 0 ) f *= getPatternFactor(p1, month, day, hour);
+    else if ( p1 >= 0 ) f *= getPatternFactor(p1, month, day, hour, dayInYear);
     return f * inflow->avgValue;
 
 }
@@ -399,7 +402,7 @@ void inflow_initDwfPattern(int j)
 //
 {
     int i;
-    for (i=0; i<24; i++) Pattern[j].factor[i] = 1.0;
+    for (i=0; i<366; i++) Pattern[j].factor[i] = 1.0;
     Pattern[j].count = 0;
     Pattern[j].type  = -1;
     Pattern[j].ID    = NULL;
@@ -440,7 +443,7 @@ int inflow_readDwfPattern(char* tok[], int ntoks)
     }
 
     // --- start reading pattern factors from rest of line
-    while ( ntoks > n && Pattern[j].count < 24 )
+    while ( ntoks > n && Pattern[j].count < 366 )
     {
         i = Pattern[j].count;
         if ( !getDouble(tok[n], &Pattern[j].factor[i]) )
@@ -453,7 +456,7 @@ int inflow_readDwfPattern(char* tok[], int ntoks)
 
 //=============================================================================
 
-double getPatternFactor(int p, int month, int day, int hour)
+double getPatternFactor(int p, int month, int day, int hour, int dayInYear)
 //
 //  Input:   p = time pattern index
 //           month = current month of year of simulation
@@ -469,6 +472,9 @@ double getPatternFactor(int p, int month, int day, int hour)
         break;
       case DAILY_PATTERN:
         if ( day >= 0 && day < 7 ) return Pattern[p].factor[day];
+        break;
+      case YEAR_PATTERN:
+        if ( dayInYear >= 0 && dayInYear < 366 ) return Pattern[p].factor[dayInYear];
         break;
       case HOURLY_PATTERN:
         if ( hour >= 0 && hour < 24 ) return Pattern[p].factor[hour];
