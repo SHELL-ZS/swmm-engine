@@ -377,7 +377,7 @@ void    inflow_initDwfInflow(TDwfInflow* inflow);
 void    inflow_initDwfPattern(int pattern);
 
 double  inflow_getExtInflow(TExtInflow* inflow, DateTime aDate);
-double  inflow_getDwfInflow(TDwfInflow* inflow, int m, int d, int h);
+double  inflow_getDwfInflow(TDwfInflow* inflow, int m, int d, int h, int dayInYear);
 
 void    inflow_deleteExtInflows(int node);
 void    inflow_deleteDwfInflows(int node);
