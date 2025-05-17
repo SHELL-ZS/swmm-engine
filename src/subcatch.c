@@ -1131,8 +1131,9 @@ void adjustSubareaParams(int i, int j)
 //           runoff coeff. by month of the year.
 //
 {
-    int p;              // monthly pattern index
+    int p;              // monthly/year pattern index
     int m;              // current month of the year
+    int date;              // current day of the year
     double f;           // adjustment factor
 
     if (i == PERV)
@@ -1145,6 +1146,12 @@ void adjustSubareaParams(int i, int j)
             f = Pattern[p].factor[m];
             if (f >= 0.0) Dstore *= f;
         }
+        if (p >= 0 && Pattern[p].type == YEAR_PATTERN)
+        {
+            date = datetime_dayOfYear(getDateTime(OldRunoffTime)) - 1;
+            f = Pattern[p].factor[date];
+            if (f >= 0.0) Dstore *= f;
+        }
 
         // --- roughness adjustment to runoff coeff.
         p = Subcatch[j].nPervPattern;
@@ -1152,6 +1159,13 @@ void adjustSubareaParams(int i, int j)
         {
             m = datetime_monthOfYear(getDateTime(OldRunoffTime)) - 1;
             f = Pattern[p].factor[m];
+            if (f <= 0.0) Alpha = 0.0;
+            else          Alpha /= f;
+        }
+        if (p >= 0 && Pattern[p].type == YEAR_PATTERN)
+        {
+            date = datetime_dayOfYear(getDateTime(OldRunoffTime)) - 1;
+            f = Pattern[p].factor[date];
             if (f <= 0.0) Alpha = 0.0;
             else          Alpha /= f;
         }

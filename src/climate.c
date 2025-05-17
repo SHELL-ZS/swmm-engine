@@ -878,6 +878,7 @@ void setEvap(DateTime theDate)
 {
     int k;
     int mon = datetime_monthOfYear(theDate);
+    int date = datetime_dayOfYear(theDate);
 
     switch ( Evap.type )
     {
@@ -915,6 +916,11 @@ void setEvap(DateTime theDate)
     if ( k >= 0 && Pattern[k].type == MONTHLY_PATTERN )
     {
         Evap.recoveryFactor = Pattern[k].factor[mon-1];
+    }
+
+    if ( k >= 0 && Pattern[k].type == YEAR_PATTERN )
+    {
+        Evap.recoveryFactor = Pattern[k].factor[date-1];
     }
 }
 

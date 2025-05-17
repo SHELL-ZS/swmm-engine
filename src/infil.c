@@ -266,6 +266,7 @@ void infil_setInfilFactor(int j)
 //  Purpose: assigns a value to the infiltration adjustment factor.
 {
     int m;
+    int date;
     int p;
 
     // ... set factor to the global conductivity adjustment factor
@@ -279,6 +280,12 @@ void infil_setInfilFactor(int j)
         {
             m = datetime_monthOfYear(getDateTime(OldRunoffTime)) - 1;
             InfilFactor = Pattern[p].factor[m];
+        }
+
+        if (p >= 0 && Pattern[p].type == YEAR_PATTERN)
+        {
+            date = datetime_dayOfYear(getDateTime(OldRunoffTime)) - 1;
+            InfilFactor = Pattern[p].factor[date];
         }
     }
 }
