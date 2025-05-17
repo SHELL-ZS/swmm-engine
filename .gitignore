@@ -1,0 +1,11 @@
+# ignore hidden files
+.*
+
+!.gitignore
+
+# ignore libraries
+node_modules/
+
+# ignore compiled files
+dist/
+build/
