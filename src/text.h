@@ -157,6 +157,7 @@
 // DWF Time Pattern Types
 #define  w_MONTHLY           "MONTHLY"
 #define  w_DAILY             "DAILY"
+#define  w_YEAR              "YEAR"
 #define  w_HOURLY            "HOURLY"
 #define  w_WEEKEND           "WEEKEND"
 

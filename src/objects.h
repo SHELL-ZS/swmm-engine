@@ -421,7 +421,7 @@ typedef struct
    char*        ID;               // time pattern name
    int          type;             // time pattern type code
    int          count;            // number of factors
-   double       factor[24];       // time pattern factors
+   double       factor[366];       // time pattern factors (in total 366)
 }  TPattern;
 
 //------------------------------
@@ -447,7 +447,7 @@ struct DwfInflow
 {
    int            param;          // pollutant index (flow = -1)
    double         avgValue;       // average value (cfs or concen.)
-   int            patterns[4];    // monthly, daily, hourly, weekend time patterns
+   int            patterns[5];    // monthly, daily, year, hourly, weekend time patterns
    struct DwfInflow* next;        // pointer to next inflow data object
 };
 typedef struct DwfInflow TDwfInflow;

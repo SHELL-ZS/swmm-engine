@@ -98,7 +98,7 @@ char* OptionWords[]        = { w_FLOW_UNITS,        w_INFIL_MODEL,
 char* OrificeTypeWords[]   = { w_SIDE, w_BOTTOM, NULL};
 char* OutfallTypeWords[]   = { w_FREE, w_NORMAL, w_FIXED, w_TIDAL,
                                w_TIMESERIES, NULL};
-char* PatternTypeWords[]   = { w_MONTHLY, w_DAILY, w_HOURLY, w_WEEKEND, NULL};
+char* PatternTypeWords[]   = { w_MONTHLY, w_DAILY, w_YEAR, w_HOURLY, w_WEEKEND, NULL};
 char* PondingUnitsWords[]  = { w_PONDED_FEET, w_PONDED_METERS };
 char* ProcessVarWords[]    = { w_HRT, w_DT, w_FLOW, w_DEPTH, w_AREA, NULL};
 char* PumpTypeWords[]      = { w_TYPE1, w_TYPE2, w_TYPE3, w_TYPE4, w_TYPE5, w_IDEAL };

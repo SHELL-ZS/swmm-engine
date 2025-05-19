@@ -383,6 +383,7 @@ enum  CompatibilityType {
  enum PatternType {
       MONTHLY_PATTERN,                 // DWF multipliers for each month
       DAILY_PATTERN,                   // DWF multipliers for each day of week
+      YEAR_PATTERN,                    // DWF multipliers for each day of a year
       HOURLY_PATTERN,                  // DWF multipliers for each hour of day
       WEEKEND_PATTERN};                // hourly multipliers for week end days
 
